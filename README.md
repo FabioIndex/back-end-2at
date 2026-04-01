@@ -19,16 +19,34 @@ Crie um arquivo chamado  **`server.js`**  e cole este código simples:
 javascript
 
 ```
-const express = require('express');
-const app = express();
-const cors = require('cors'); // Permite que o HTML acesse o servidor
-app.use(cors());
+const express = require("express");
+const cors = require("cors");
 
-app.get('/mensagem', (req, res) => {
+const app = express();
+
+
+app.use(cors({
+  origin: "*", // libera qualquer origem (ideal pra teste)
+  methods: ["GET", "POST"],
+  allowedHeaders: ["Content-Type"]
+}));
+
+
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET,POST");
+  res.header("Access-Control-Allow-Headers", "Content-Type");
+  next();
+});
+
+app.get("/mensagem", (req, res) => {
   res.json({ texto: "Olá! Esta mensagem veio do Back-End! 🚀" });
 });
 
-app.listen(3000, () => console.log("Servidor ligado na porta 3000"));
+//  Servidor
+app.listen(3000, () => {
+  console.log("Servidor ligado na porta 3000");
+});
 
 ```
 
@@ -49,11 +67,16 @@ html
 
 <script>
   async function buscarDados() {
-    // Busca a informação no servidor que criamos
-    const resposta = await fetch('http://localhost:3000/mensagem');
-    const dados = await json();
-    // Exibe a mensagem na tela
-    document.getElementById('resposta').innerText = dados.texto;
+    try {
+      const resposta = await fetch('https://scaling-space-guide-jxw9q5pvjrw3pj4x-3000.app.github.dev/mensagem');
+      
+      const dados = await resposta.json();
+
+      document.getElementById('resposta').innerText = dados.texto;
+    } catch (erro) {
+      console.error(erro);
+      document.getElementById('resposta').innerText = 'Erro ao buscar dados';
+    }
   }
 </script>
 
